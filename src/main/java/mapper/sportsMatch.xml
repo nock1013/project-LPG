@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="game.LPG.sportsMatch">
+<!-- ======================================= insert문 ======================================== -->
+	<insert id="insert" parameterType="sportsMatch">
+		insert into sportsMatch
+		values(sportsMatch_seq.nextVal,#{mchName},to_date(#{mchDate}),#{mchPlay},null,#{mchPrice},#{mchUrgent},#{mchContent},#{mchGender},#{mchShoes},#{mchAbil},#{mchType},#{sportsNo},#{mchDateStart},#{mchDateEnd})
+	</insert>
+	<insert id="insertIndiv" parameterType="sportsMatchIndiv">
+		insert into sportsMatchIndiv
+		values(sportsMatchIndiv_seq.nextVal,#{sportsNo},sportsMatch_seq.currVal)
+	</insert>
+	<insert id="insertTeam" parameterType="sportsMatchTeam">
+		insert into sportsMatchTeam
+		values(sportsMatchTeam_seq.nextVal,sportsMatch_seq.currVal,#{teamNo},0,'0')
+	</insert>
+<!-- =============================================================================================== -->
+<!-- ======================================= matchTeam select문 ======================================== -->
+	<select id="matchListTeam" resultType="sportsMatch" parameterType="ms">
+		select m.*,t.teamname<!-- , g.grdname, g.grdarea -->
+		from sportsmatch m, sportsmatchteam tm, <!-- ground g, groundreserve gr, --> team t
+		where m.mchno=tm.mchno
+			and tm.teamno=t.teamno
+			<!-- and m.mchno=gr.mchno
+			and g.grdno=gr.grdno -->
+			and m.mchtype=#{mchType}
+			and m.mchplay like '%' || #{mchPlay}
+			<!-- and g.grdarea like '%' || #{grdArea} || '%' -->
+			and m.mchname like '%' || #{mchName} || '%'
+	</select>
+	
+	<select id="matchTeamDetailM" resultType="sportsMatch" parameterType="String">
+		select m.*, tm.tmgrade
+		from sportsmatch m, sportsmatchteam smt, <!-- ground g, groundreserve gr, --> team t, teammember tm
+		where m.mchno=smt.mchno
+			and smt.teamno=t.teamno
+			<!-- and m.mchno=gr.mchno
+			and g.grdno=gr.grdno -->
+			and t.teamno = tm.teamno
+			and m.mchNo = #{mchNo}
+	</select>
+	
+	<select id="matchTeamDetailG" resultType="ground" parameterType="String">
+		select g.*
+		from sportsmatch m, sportsmatchteam smt, <!-- ground g, groundreserve gr, --> team t, teammember tm
+		where m.mchno=smt.mchno
+			and smt.teamno=t.teamno
+			<!-- and m.mchno=gr.mchno
+			and g.grdno=gr.grdno -->
+			and t.teamno = tm.teamno
+			and m.mchNo = #{mchNo}
+	</select>
+	
+	<select id="matchTeamDetailT" resultType="team" parameterType="String">
+		select t.*
+		from sportsmatch m, sportsmatchteam smt, <!-- ground g, groundreserve gr, --> team t, teammember tm
+		where m.mchno=smt.mchno
+			and smt.teamno=t.teamno
+			<!-- and m.mchno=gr.mchno
+			and g.grdno=gr.grdno -->
+			and t.teamno = tm.teamno
+			and m.mchNo = #{mchNo}
+	</select>
+<!-- =============================================================================================== -->
+<!-- ======================================= matchIndiv select문 ======================================== -->
+	<select id="matchListIndiv" resultType="sportsMatch" parameterType="ms">
+		select m.*, g.grdname, g.grdaddr
+		from sportsmatch m, usersports su, sportsmatchindiv im, ground g, groundreserve gr
+		where m.mchno=gr.mchno 
+			and g.grdno=gr.grdno
+			and im.mchno=m.mchno
+			and im.sportsno=su.sportsno
+			and m.mchtype=#{mchType}
+			and m.mchplay like '%' || #{mchPlay}
+			<!-- and g.grdarea like '%' || #{grdArea} || '%' --> 
+			and m.mchname like '%' || #{mchName} || '%'
+	</select>
+	<select id="matchIndivDetailM" resultType="sportsMatch" parameterType="String">
+		select m.*
+		from sportsmatch m, sportsmatchteam smt, ground g, groundreserve gr, team t, teammember tm
+		where m.mchno=smt.mchno
+			and smt.teamno=t.teamno
+			and m.mchno=gr.mchno
+			and g.grdno=gr.grdno
+			and t.teamno = tm.teamno
+			and m.mchNo = #{mchNo}
+	</select>
+	<select id="matchIndivDetailG" resultType="ground" parameterType="String">
+		select g.*
+		from sportsmatch m, sportsmatchteam smt, ground g, groundreserve gr, team t, teammember tm
+		where m.mchno=smt.mchno
+			and smt.teamno=t.teamno
+			and m.mchno=gr.mchno
+			and g.grdno=gr.grdno
+			and t.teamno = tm.teamno
+			and m.mchNo = #{mchNo}
+	</select>
+	<select id="matchIndivDetailSU" resultType="userSports" parameterType="String">
+		select su.*
+		from sportsmatch m, sportsmatchteam smt, ground g, groundreserve gr, team t, teammember tm
+		where m.mchno=smt.mchno
+			and smt.teamno=t.teamno
+			and m.mchno=gr.mchno
+			and g.grdno=gr.grdno
+			and t.teamno = tm.teamno
+			and m.mchNo = #{mchNo}
+	</select>
+<!-- =============================================================================================== -->
+	<select id="mchNoSearch" resultType="sportsMatch" parameterType="String">
+		select mchno, mchname, to_char(mchdate,'yyyy-mm-dd') as mchdate, mchplay, mchgrd, mchprice, 
+			mchurgent, mchcontent, mchgender, mchshoes, mchabil, mchtype,
+			sportsno, mchdatestart, mchdateend
+		from sportsMatch where mchNo = #{mchNo}
+	</select>
+	<!-- <select id="matchTeamDetail" resultType="sportsMatch" parameterType="String">
+		select m.*, g.*, t.*
+		from sportsmatch m, sportsmatchteam tm, ground g, groundreserve gr, team t
+		where m.mchno=tm.mchno
+			and tm.teamno=t.teamno
+			and m.mchno=gr.mchno
+			and g.grdno=gr.grdno
+			and m.mchNo = #{mchNo}
+	</select> -->
+
+<!-- ==================용병인원수 추가============================ -->	
+	<update id="backUpNum" parameterType="smt">
+		update sportsmatchteam set backupnum=#{backupNum}
+			where mchno = #{mchNo}
+				and teamno = #{teamNo}
+	</update>
+<!-- ==================팀 매치 신청 ===============================-->
+	<insert id="matchJoin" parameterType="smt">
+		insert into sportsmatchteam values(sportsmatchteam_seq.nextVal, #{mchNo}, #{sportsNo}, 0)
+	</insert>		
+</mapper>
